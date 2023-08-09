@@ -1,51 +1,83 @@
-import { useAtom } from 'jotai';
 import Konva from 'konva';
 import { useEffect, useState } from 'react';
-import { Circle, Layer, Rect, Stage } from 'react-konva';
-import { userAtom } from 'src/atoms/user';
+import { Circle, Layer, Stage } from 'react-konva';
 import { Loading } from 'src/components/Loading/Loading';
 
 const Home = () => {
   //黒い枠の中をクリックし、矢印ボタンを押すと、赤い点が動くよー
   const [playerX, setPlayerX] = useState(4);
   const [playerY, setPlayerY] = useState(0);
-  const [tamaX, settamaX] = useState(0);
-  const [tamaY, settamaY] = useState(2);
-  const [user] = useAtom(userAtom);
-  const [dx, setDx] = useState(-1); // x方向の移動量
-  const dx2 = 1;
-  const [dy, setDy] = useState(0); // y方向の移動量
-  const [enemies, setEnemies] = useState<{ x: number; y: number }[]>([
-    { x: 5, y: 2 },
-    { x: 8, y: 4 },
-  ]);
+  const [dy, setDy] = useState(0);
   const [bullet, setbullets] = useState<{ x: number; y: number }[]>([]);
-  const [board, setBoard] = useState([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
+  const [isMovingLeft, setIsMovingLeft] = useState(false);
+  const [isMovingRight, setIsMovingRight] = useState(false);
+  const [isMovingUp, setIsMovingUp] = useState(false);
+  const [isMovingDown, setIsMovingDown] = useState(false);
   const hoge = true;
-  //キー入力
-  const keydown = async (e: React.KeyboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    // const game = await apiClient.?.$post({
-    //   body: { ? },
-    // });
-  };
 
-  //newgame作る
-  const click = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    // const newGame = await apiClient.create.$post();
-  };
+  useEffect(() => {
+    // eslint-disable-next-line complexity
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowUp') {
+        setIsMovingUp(true);
+      } else if (e.code === 'ArrowDown') {
+        setIsMovingDown(true);
+      } else if (e.code === 'ArrowLeft') {
+        setIsMovingLeft(true);
+      } else if (e.code === 'ArrowRight') {
+        setIsMovingRight(true);
+      }
+    };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowUp') {
+        setIsMovingUp(false);
+      } else if (e.code === 'ArrowDown') {
+        setIsMovingDown(false);
+      } else if (e.code === 'ArrowLeft') {
+        setIsMovingLeft(false);
+      } else if (e.code === 'ArrowRight') {
+        setIsMovingRight(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    let animationFrameId: number | null = null;
+
+    const animate = () => {
+      if (isMovingLeft) {
+        setPlayerY((prevY) => Math.max(prevY - 0.1, 0));
+      }
+      if (isMovingRight) {
+        setPlayerY((prevY) => Math.min(prevY + 0.1, 7));
+      }
+      if (isMovingUp) {
+        setPlayerX((prevX) => Math.max(prevX - 0.1, 0));
+      }
+      if (isMovingDown) {
+        setPlayerX((prevX) => Math.min(prevX + 0.1, 7));
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isMovingLeft, isMovingRight, isMovingUp, isMovingDown]);
   //スペースで弾出すよ(打て打つほど早くなっちゃう)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,7 +88,6 @@ const Home = () => {
         };
         setbullets((prevbullets) => [...prevbullets, newBullets]);
         console.log(bullet);
-        console.log(enemies);
         const tamaAnimation = new Konva.Animation((tama) => {
           setbullets((prevBullets) => {
             if (tama === undefined) {
@@ -67,7 +98,7 @@ const Home = () => {
               const dist = speed * (tama.timeDiff / 1000);
               const newbullet = prevBullets.map((bullet) => ({
                 ...bullet,
-                x: bullet.x + dx2 * dist,
+                x: bullet.x * dist,
                 y: bullet.y,
               }));
               return newbullet.filter((bullet) => bullet.x <= 18);
@@ -83,42 +114,15 @@ const Home = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dx2, dy]);
+  }, [dy]);
 
   if (!hoge) return <Loading visible />;
   return (
     <>
-      <div
-        className="container"
-        onKeyDown={keydown}
-        style={{ border: 'solid' }}
-        onClick={click}
-        tabIndex={0}
-      >
-        <div id="key">X:{playerX}</div>
-        <div id="key">Y:{playerY}</div>
-        <div id="key" />
-      </div>
       <Stage width={800} height={600}>
         <Layer>
-          {board.map((row, y) =>
-            row.map(
-              (color, x) =>
-                color !== 0 && (
-                  <Rect
-                    key={`${x}-${y}`}
-                    x={x * 100 + 70}
-                    y={y * 100}
-                    width={100}
-                    height={100}
-                    fill="black"
-                  />
-                )
-            )
-          )}
-          {enemies.map((enemy, index) => (
-            <Circle key={index} x={enemy.x * 100} y={enemy.y * 100 + 50} radius={20} fill="green" />
-          ))}
+          {/* 戦闘機の描画 */}
+          <Circle x={playerY * 100 + 50} y={playerX * 100 + 50} radius={20} fill="blue" />
           {bullet.map((bullet, index) => (
             <Circle
               key={index}
