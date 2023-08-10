@@ -129,12 +129,7 @@ const Home = () => {
   return (
     <>
       {/* <img src={g.src} alt="images.png" /> */}
-      <Stage
-        width={800}
-        height={800}
-        className={styles.background}
-        
-      >
+      <Stage width={800} height={800} className={styles.background}>
         <Layer>
           <Image
             image={gradiusImg.current}
