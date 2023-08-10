@@ -36,7 +36,9 @@
     "next": "^13.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-konva": "^18.2.10"
+    "react-konva": "^18.2.10",
+    "react-native": "^0.72.3",
+    "use-image": "^1.1.1"
   },
   "devDependencies": {
     "@stylelint/postcss-css-in-js": "^0.37.2",

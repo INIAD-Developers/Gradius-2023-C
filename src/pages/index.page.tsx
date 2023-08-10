@@ -1,8 +1,7 @@
 import Konva from 'konva';
-import { useEffect, useState } from 'react';
-import { Circle, Layer, Stage } from 'react-konva';
+import { useEffect, useRef, useState } from 'react';
+import { Circle, Image, Layer, Stage } from 'react-konva';
 import { Loading } from 'src/components/Loading/Loading';
-
 const Home = () => {
   //黒い枠の中をクリックし、矢印ボタンを押すと、赤い点が動くよー
   const [playerX, setPlayerX] = useState(4);
@@ -13,7 +12,16 @@ const Home = () => {
   const [isMovingRight, setIsMovingRight] = useState(false);
   const [isMovingUp, setIsMovingUp] = useState(false);
   const [isMovingDown, setIsMovingDown] = useState(false);
+  const gradiusImg = useRef(new window.Image());
+  const [background_pos, setbackground_pos] = useState(0);
+  const [isGradiusLoaded, setIsGradiusLoaded] = useState(false);
   const hoge = true;
+  useEffect(() => {
+    gradiusImg.current.src = '/images/images.jpg';
+    gradiusImg.current.onload = () => {
+      setIsGradiusLoaded(true);
+    };
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line complexity
@@ -119,10 +127,16 @@ const Home = () => {
   if (!hoge) return <Loading visible />;
   return (
     <>
+      {/* <img src={g.src} alt="images.png" /> */}
       <Stage width={800} height={600}>
         <Layer>
-          {/* 戦闘機の描画 */}
-          <Circle x={playerY * 100 + 50} y={playerX * 100 + 50} radius={20} fill="blue" />
+          <Image
+            image={gradiusImg.current}
+            x={playerY * 100}
+            y={playerX * 100}
+            width={90}
+            height={90}
+          />
           {bullet.map((bullet, index) => (
             <Circle
               key={index}
