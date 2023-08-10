@@ -2,6 +2,7 @@ import Konva from 'konva';
 import { useEffect, useRef, useState } from 'react';
 import { Circle, Image, Layer, Stage } from 'react-konva';
 import { Loading } from 'src/components/Loading/Loading';
+import styles from './index.module.css';
 const Home = () => {
   //黒い枠の中をクリックし、矢印ボタンを押すと、赤い点が動くよー
   const [playerX, setPlayerX] = useState(4);
@@ -63,16 +64,16 @@ const Home = () => {
 
     const animate = () => {
       if (isMovingLeft) {
-        setPlayerY((prevY) => Math.max(prevY - 0.1, 0));
+        setPlayerY((prevY) => Math.max(prevY - 0.05, 0));
       }
       if (isMovingRight) {
-        setPlayerY((prevY) => Math.min(prevY + 0.1, 7));
+        setPlayerY((prevY) => Math.min(prevY + 0.05, 7));
       }
       if (isMovingUp) {
-        setPlayerX((prevX) => Math.max(prevX - 0.1, 0));
+        setPlayerX((prevX) => Math.max(prevX - 0.05, 0));
       }
       if (isMovingDown) {
-        setPlayerX((prevX) => Math.min(prevX + 0.1, 7));
+        setPlayerX((prevX) => Math.min(prevX + 0.05, 7));
       }
 
       animationFrameId = requestAnimationFrame(animate);
@@ -128,7 +129,12 @@ const Home = () => {
   return (
     <>
       {/* <img src={g.src} alt="images.png" /> */}
-      <Stage width={800} height={600}>
+      <Stage
+        width={800}
+        height={800}
+        className={styles.background}
+        
+      >
         <Layer>
           <Image
             image={gradiusImg.current}
