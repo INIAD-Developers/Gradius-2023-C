@@ -14,9 +14,29 @@ const Home = () => {
   const [isMovingUp, setIsMovingUp] = useState(false);
   const [isMovingDown, setIsMovingDown] = useState(false);
   const gradiusImg = useRef(new window.Image());
-  const [background_pos, setbackground_pos] = useState(0);
   const [isGradiusLoaded, setIsGradiusLoaded] = useState(false);
+  const [backgroundX, setBackgroundX] = useState(0);
   const hoge = true;
+
+  const backgroundImage = new window.Image();
+  backgroundImage.src = '../../public/utyuu2.jpg';
+
+  useEffect(() => {
+    const animate = () => {
+      setBackgroundX((prevBackgroundX) => prevBackgroundX - 1); // 速度や方向を調整
+
+      // 次のフレームを要求
+      requestAnimationFrame(animate);
+    };
+
+    const animationFrame = requestAnimationFrame(animate);
+
+    return () => {
+      // コンポーネントがアンマウントされる際にアニメーションを停止
+      cancelAnimationFrame(animationFrame);
+    };
+  }, []);
+
   useEffect(() => {
     gradiusImg.current.src = '/images/images.jpg';
     gradiusImg.current.onload = () => {
@@ -88,6 +108,8 @@ const Home = () => {
     };
   }, [isMovingLeft, isMovingRight, isMovingUp, isMovingDown]);
   //スペースで弾出すよ(打て打つほど早くなっちゃう)
+  const tamaAnimation = useRef<Konva.Animation | null>(null);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
@@ -95,41 +117,39 @@ const Home = () => {
           x: playerY,
           y: playerX,
         };
-        setbullets((prevbullets) => [...prevbullets, newBullets]);
-        console.log(bullet);
-        const tamaAnimation = new Konva.Animation((tama) => {
-          setbullets((prevBullets) => {
-            if (tama === undefined) {
-              console.log('error');
-              return prevBullets;
-            } else {
-              const speed = 2;
-              const dist = speed * (tama.timeDiff / 1000);
-              const newbullet = prevBullets.map((bullet) => ({
-                ...bullet,
-                x: bullet.x * dist,
-                y: bullet.y,
-              }));
-              return newbullet.filter((bullet) => bullet.x <= 18);
+        setbullets((prevBullets) => [...prevBullets, newBullets]);
+
+        if (tamaAnimation.current === null) {
+          tamaAnimation.current = new Konva.Animation((anim) => {
+            if (anim !== undefined) {
+              setbullets((prevBullets) => {
+                const speed = 10; // 速度を適切な値に調整
+                const dist = speed * (anim.timeDiff / 1000);
+                const newBullets = prevBullets.map((bullet) => ({
+                  ...bullet,
+                  x: bullet.x + dist, // x座標にdistを足す
+                }));
+                return newBullets.filter((bullet) => bullet.x <= 30);
+              });
             }
           });
-        });
-        tamaAnimation.start();
+          tamaAnimation.current.start();
+        }
       }
     };
+
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dy]);
+  }, [playerX, playerY]);
 
   if (!hoge) return <Loading visible />;
   return (
     <>
       {/* <img src={g.src} alt="images.png" /> */}
-      <Stage width={800} height={800} className={styles.background}>
+      <Stage width={1200} height={800} className={styles.background}>
         <Layer>
           <Image
             image={gradiusImg.current}
