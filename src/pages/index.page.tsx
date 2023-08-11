@@ -16,6 +16,24 @@ const Home = () => {
   const gradiusImg = useRef(new window.Image());
   const [isGradiusLoaded, setIsGradiusLoaded] = useState(false);
   const [backgroundX, setBackgroundX] = useState(0);
+  const [enemies, setEnemies] = useState<{ x: number; y: number }[]>([
+    { x: 5, y: 2 },
+    { x: 8, y: 4 },
+  ]);
+  const [dx, setDx] = useState(-1); // x方向の移動量
+  const dx2 = 1;
+  const [board, setBoard] = useState([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
   const hoge = true;
 
   const backgroundImage = new window.Image();
@@ -131,7 +149,6 @@ const Home = () => {
                 }));
                 return newBullets.filter((bullet) => bullet.x <= 30);
               });
-
             }
           });
           tamaAnimation.current.start();
@@ -146,59 +163,59 @@ const Home = () => {
     };
   }, [playerX, playerY]);
 
-  // const findnumber = (n: number) => {
-  //   let count = 0;
-  //   for (let y = 0; y < board.length; y++) {
-  //     for (let x = 0; x < board[y].length; x++) {
-  //       // eslint-disable-next-line max-depth
-  //       if (board[y][x] === n) {
-  //         count++;
-  //       }
-  //     }
-  //   }
-  //   return count;
-  // };
-  // useEffect(() => {
-  //   const moveenemy = () => {
-  //     console.log('a');
-  //     if (enemies.length === 0) {
-  //       const addEnemy = () => {
-  //         const newEnemies = [
-  //           { x: 5, y: 2 },
-  //           { x: 8, y: 4 },
-  //         ];
-  //         setEnemies((prevEnemies) => [...prevEnemies, ...newEnemies]);
-  //       };
-  //       addEnemy();
-  //     }
-  //     if (enemies.length !== 0) {
-  //       console.log(enemies.length);
-  //       const enemyAnimation = new Konva.Animation((enemy) => {
-  //         setEnemies((prevenemy) => {
-  //           if (enemy === undefined) {
-  //             console.log('error');
-  //             return prevenemy;
-  //           } else {
-  //             const speed = 0.1;
-  //             const dist = speed * (enemy.timeDiff / 1000);
-  //             const newenemy = prevenemy.map((enemies) => ({
-  //               x: enemies.x + dx * dist,
-  //               y: enemies.y,
-  //             }));
-  //             console.log();
-  //             return newenemy.filter((enemy) => enemy.x >= 0);
-  //           }
-  //         });
-  //       });
-  //       enemyAnimation.start();
-  //     }
-  //   };
-  //   moveenemy();
+  const findnumber = (n: number) => {
+    let count = 0;
+    for (let y = 0; y < board.length; y++) {
+      for (let x = 0; x < board[y].length; x++) {
+        // eslint-disable-next-line max-depth
+        if (board[y][x] === n) {
+          count++;
+        }
+      }
+    }
+    return count;
+  };
+  useEffect(() => {
+    const moveenemy = () => {
+      console.log('a');
+      if (enemies.length === 0) {
+        const addEnemy = () => {
+          const newEnemies = [
+            { x: 5, y: 2 },
+            { x: 8, y: 4 },
+          ];
+          setEnemies((prevEnemies) => [...prevEnemies, ...newEnemies]);
+        };
+        addEnemy();
+      }
+      if (enemies.length !== 0) {
+        console.log(enemies.length);
+        const enemyAnimation = new Konva.Animation((enemy) => {
+          setEnemies((prevenemy) => {
+            if (enemy === undefined) {
+              console.log('error');
+              return prevenemy;
+            } else {
+              const speed = 0.1;
+              const dist = speed * (enemy.timeDiff / 1000);
+              const newenemy = prevenemy.map((enemies) => ({
+                x: enemies.x + dx * dist,
+                y: enemies.y,
+              }));
+              console.log();
+              return newenemy.filter((enemy) => enemy.x >= 0);
+            }
+          });
+        });
+        enemyAnimation.start();
+      }
+    };
+    moveenemy();
 
-  //   return () => {
-  //     moveenemy();
-  //   };
-  // }, [dx, dy, enemies.length]);
+    return () => {
+      moveenemy();
+    };
+  }, [dx, dy, enemies.length]);
 
   if (!hoge) return <Loading visible />;
   return (
@@ -221,6 +238,9 @@ const Home = () => {
               radius={20}
               fill="red"
             />
+          ))}
+          {enemies.map((enemy, index) => (
+            <Circle key={index} x={enemy.x * 100} y={enemy.y * 100 + 50} radius={20} fill="green" />
           ))}
         </Layer>
       </Stage>
