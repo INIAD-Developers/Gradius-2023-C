@@ -2,7 +2,9 @@ import Konva from 'konva';
 import { useEffect, useRef, useState } from 'react';
 import { Circle, Image, Layer, Stage } from 'react-konva';
 import { Loading } from 'src/components/Loading/Loading';
+import { Controller } from '../pages/handller/index.page.tsx';
 import styles from './index.module.css';
+
 const Home = () => {
   //黒い枠の中をクリックし、矢印ボタンを押すと、赤い点が動くよー
   const [playerX, setPlayerX] = useState(4);
@@ -30,7 +32,6 @@ const Home = () => {
 
   const [dx, setDx] = useState(-1); // x方向の移動量
   const dx2 = 1;
-
   const hoge = true;
   useEffect(() => {
     const animate = () => {
@@ -47,6 +48,21 @@ const Home = () => {
       cancelAnimationFrame(animationFrame);
     };
   }, []);
+
+  useEffect(() => {
+    if (Controller.up) {
+      setDy(dy - 1);
+    }
+    if (Controller.down) {
+      setDy(dy + 1);
+    }
+    if (Controller.left) {
+      setDx(dx - 1);
+    }
+    if (Controller.right) {
+      setDx(dx + 1);
+    }
+  }, [Controller.up, Controller.down, Controller.left, Controller.right]);
 
   useEffect(() => {
     const image = new window.Image();
