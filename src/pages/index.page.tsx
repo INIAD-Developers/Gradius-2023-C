@@ -22,8 +22,8 @@ const Home = () => {
   const [playerLife, setPlayerLife] = useState(3);
 
   const [enemies, setEnemies] = useState<{ x: number; y: number }[]>([
-    { x: 5, y: 2 },
-    { x: 8, y: 4 },
+    { x: 15, y: 2 },
+    { x: 10, y: 4 },
   ]);
 
   const [dx, setDx] = useState(-1); // x方向の移動量
@@ -169,57 +169,60 @@ const Home = () => {
     };
   }, [playerX, playerY]);
 
-  const findnumber = (n: number) => {
-    let count = 0;
-    for (let y = 0; y < board.length; y++) {
-      for (let x = 0; x < board[y].length; x++) {
-        // eslint-disable-next-line max-depth
-        if (board[y][x] === n) {
-          count++;
-        }
-      }
-    }
-    return count;
-  };
+  const enemyAnimation = useRef<Konva.Animation | null>(null);
   useEffect(() => {
-    const moveenemy = () => {
-      if (enemies.length === 0) {
-        const addEnemy = () => {
-          const newEnemies = [
-            { x: 5, y: 2 },
-            { x: 8, y: 4 },
-          ];
-          setEnemies((prevEnemies) => [...prevEnemies, ...newEnemies]);
-        };
-        addEnemy();
-      }
-      if (enemies.length !== 0) {
-        const enemyAnimation = new Konva.Animation((enemy) => {
-          setEnemies((prevenemy) => {
-            if (enemy === undefined) {
-              console.log('error');
-              return prevenemy;
-            } else {
-              const speed = 0.1;
-              const dist = speed * (enemy.timeDiff / 1000);
-              const newenemy = prevenemy.map((enemies) => ({
-                x: enemies.x + dx * dist,
-                y: enemies.y,
-              }));
-              console.log();
-              return newenemy.filter((enemy) => enemy.x >= 0);
-            }
-          });
-        });
-        enemyAnimation.start();
+    const addEnemy = () => {
+      if (enemies.length <= 2) {
+        const newEnemies = [
+          { x: 15, y: 2 },
+          { x: 10, y: 4 },
+          { x: 11, y: 3 },
+          { x: 12, y: 2 },
+          { x: 13, y: 4 },
+        ];
+        setEnemies((prevEnemies) => [...prevEnemies, ...newEnemies]);
       }
     };
-    moveenemy();
+
+    const speed = 1.5;
+    const moving = Math.random() < 0.5 ? 0 : 1; // 初期方向
+    let direction = Math.random() < 0.5 ? -1 : 1; // 初期方向
+
+    const moveEnemy = () => {
+      addEnemy();
+      if (enemyAnimation.current === null) {
+        enemyAnimation.current = new Konva.Animation((enemy) => {
+          if (enemy !== undefined) {
+            setEnemies((prevEnemies) => {
+              const dist = speed * (enemy.timeDiff / 1000);
+              const newEnemies = prevEnemies.map((enemy) => {
+                // 敵キャラクターが画面端に達したら方向を逆にする
+                if (enemy.y <= 1 || enemy.y >= 5) {
+                  direction = -direction * moving;
+                }
+                return {
+                  ...enemy,
+                  x: enemy.x + dist * dx,
+                  y: enemy.y + dist * direction * 0.3, // y 方向にも移動
+                };
+              });
+              return newEnemies.filter((enemy) => enemy.x >= 0);
+            });
+          }
+        });
+        enemyAnimation.current.start();
+      }
+    };
+
+    moveEnemy();
 
     return () => {
-      moveenemy();
+      if (enemyAnimation.current) {
+        enemyAnimation.current.stop();
+        enemyAnimation.current = null;
+      }
     };
-  }, [dx, dy, enemies.length]);
+  }, [enemies.length, dx]);
 
   const detectCollisions = () => {
     setbullets((prevBullets) => {
